@@ -20,6 +20,16 @@ how to install :
 
 3. Enjoy it :D
 
+Composition for made it :
+
+1. PHP Native ofc,
+
+2. HTML
+
+3. Javascript (Only basic DOM)
+
+4. Tailwindcss (Im pro in tailwindcss 😎)
+
 Screenshot :
 
 ![1](screenshots/1.png)
