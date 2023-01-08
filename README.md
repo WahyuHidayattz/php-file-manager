@@ -16,7 +16,7 @@ how to install :
 
 1. Clone this repo
 
-2. Call it into brwser ex. http://yourdomain/file-manager
+2. Call it into brwser ex. http://yourdomain/php-file-manager
 
 3. Enjoy it :D
 
