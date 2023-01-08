@@ -27,20 +27,20 @@ for ($i = 0; $i < 100; $i++) {
     <div class="flex flex-col w-full h-full bg-gray-200 overflow-auto">
 
         <!-- header -->
-        <div class="flex flex-row items-center justify-between gap-6 px-12 py-4 bg-slate-900 text-white">
+        <div class="flex flex-row items-center justify-between gap-6 px-4 md:px-12 lg:px-24 py-4 bg-slate-900 text-white">
             <div class="flex flex-col">
-                <span>File Manager PHP</span>
+                <span class="font-semibold">File Manager PHP</span>
                 <span class="text-sm text-slate-400">Created by Wahyu Hidayat</span>
             </div>
         </div>
         <!-- content -->
 
-        <div class="flex flex-col px-12 py-6 flex-1 overflow-auto">
+        <div class="flex flex-col px-4 md:px-12 lg:px-24 py-6 flex-1 overflow-auto">
 
             <div class="flex flex-col bg-white shadow-md rounded-md overflow-auto flex-1">
 
-                <div class="flex flex-row justify-between items-center gap-3 p-4 border-b border-b-gray-200">
-                    <div class="flex-1 flex flex-row items-center gap-2 text-sm">
+                <div class="flex flex-row md:justify-between justify-end items-center gap-3 p-4 border-b border-b-gray-200">
+                    <div class="hidden md:flex flex-1 flex-row items-center gap-2 text-sm">
                         <a href="" class="flex flex-row px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded-md font-semibold">
                             Root Folder
                         </a>
@@ -62,7 +62,7 @@ for ($i = 0; $i < 100; $i++) {
                     </button>
                 </div>
 
-                <div class="grid grid-cols-5 gap-3 p-6 overflow-auto">
+                <div class="flex flex-col sm:grid sm:grid-cols-2 md:grid md:grid-cols-3 lg:grid lg:grid-cols-4 xl:grid xl:grid-cols-5 gap-3 p-6 overflow-auto">
                     <?php foreach ($files as $file) : ?>
                         <a href="" class="w-full flex flex-row items-center gap-4 px-6 py-3 text-gray-700 bg-white rounded-md border border-gray-300 hover:bg-gray-200">
                             <?php if ($file[1] == "file") : ?>
@@ -93,7 +93,7 @@ for ($i = 0; $i < 100; $i++) {
             </div>
 
             <!-- modal dialgo upload -->
-            <div id="modal-file-upload" class="hidden absolute top-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg mt-[180px] mr-16 w-[350px] flex flex-col gap-4 overflow-hidden">
+            <div id="modal-file-upload" class="hidden absolute top-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg mt-[180px] mr-8 md:mr-16 lg:mr-28 w-[350px] flex flex-col gap-4 overflow-hidden">
                 <div class="flex flex-row items-center justify-between gap-4 border-b border-b-gray-300 px-4 py-2">
                     <span>File Uploader</span>
                     <div id="button-file-close" class="p-2 rounded-full hover:bg-gray-200">
@@ -113,7 +113,7 @@ for ($i = 0; $i < 100; $i++) {
             </div>
 
             <!-- modal dialgo create folder -->
-            <div id="modal-create-folder" class="hidden absolute top-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg mt-[180px] mr-16 w-[350px] flex flex-col gap-4 overflow-hidden">
+            <div id="modal-create-folder" class="hidden absolute top-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg mt-[180px] mr-8 md:mr-16 lg:mr-28 w-[350px] flex flex-col gap-4 overflow-hidden">
                 <div class="flex flex-row items-center justify-between gap-4 border-b border-b-gray-300 px-4 py-2">
                     <span>Create Folder</span>
                     <div id="button-create-folder-close" class="p-2 rounded-full hover:bg-gray-200">
