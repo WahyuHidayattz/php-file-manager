@@ -37,3 +37,5 @@ Screenshot :
 ![2](screenshots/2.png)
 
 ![3](screenshots/3.png)
+
+Notes : this still WIP. and not function, soon will be updated frequently
