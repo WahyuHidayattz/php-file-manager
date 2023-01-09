@@ -5,6 +5,13 @@ if (isset($_GET['path'])) {
     $path = $_GET['path'];
 }
 
+if (isset($_POST["input-folder-name"])) {
+    $folder_name = $path . "/" . $_POST["input-folder-name"];
+    if(!file_exists($folder_name)){
+        mkdir($folder_name);
+    }
+}
+
 $new_path = [];
 foreach (scandir($path) as $file) {
     if ($file != ".") {
@@ -18,9 +25,11 @@ foreach (scandir($path) as $file) {
     }
 }
 
-usort($new_path, function ($a, $b) {
-    return $b[1] <=> $a[1];
-});
+array_multisort(
+    array_column($new_path, 1), SORT_DESC,
+    array_column($new_path, 0), SORT_ASC,
+    $new_path
+);
 
 $dir_listing = explode("/", $path);
 $dir_listing_new = [];
@@ -49,7 +58,7 @@ if (!$dir_listing_new) {
     <title>File Manager</title>
 </head>
 
-<body class="">
+<body class="text-sm md:text-base">
 
     <!-- main container -->
     <div class="flex flex-col w-full h-full overflow-auto bg-gray-200">
@@ -91,8 +100,8 @@ if (!$dir_listing_new) {
                     </button>
                 </div>
 
-                <div class="flex flex-col h-full">
-                    <div class="flex flex-col gap-3 p-6 overflow-auto sm:grid sm:grid-cols-2 md:grid md:grid-cols-3 lg:grid lg:grid-cols-4 xl:grid xl:grid-cols-5">
+                <div class="flex flex-col h-full overflow-auto">
+                    <div class="flex flex-col gap-3 p-6 sm:grid sm:grid-cols-2 md:grid md:grid-cols-3 lg:grid lg:grid-cols-4 xl:grid xl:grid-cols-5">
                         <?php foreach ($new_path as $file) : ?>
                             <a href="<?= $file[2]; ?>" class="flex flex-row items-center w-full gap-4 px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-200">
                                 <?php if ($file[1] == "folder") : ?>
@@ -118,7 +127,7 @@ if (!$dir_listing_new) {
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                                 <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd" />
                             </svg>
-                            <span>Delete This Folder</span>
+                            <span>Delete This Folder and files</span>
                         </a>
                     </div>
                 <?php endif; ?>
@@ -126,7 +135,7 @@ if (!$dir_listing_new) {
             </div>
 
             <!-- modal dialgo upload -->
-            <div id="modal-file-upload" class="hidden absolute top-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg mt-[180px] mr-8 md:mr-16 lg:mr-28 w-[350px] flex flex-col gap-4 overflow-hidden">
+            <div id="modal-file-upload" class="hidden w-[300px] md:w-[350px] absolute top-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg mt-[180px] mr-8 md:mr-16 lg:mr-28 w-[350px] flex flex-col gap-4 overflow-hidden">
                 <div class="flex flex-row items-center justify-between gap-4 px-4 py-2 border-b border-b-gray-300">
                     <span>File Uploader</span>
                     <div id="button-file-close" class="p-2 rounded-full hover:bg-gray-200">
@@ -146,7 +155,7 @@ if (!$dir_listing_new) {
             </div>
 
             <!-- modal dialgo create folder -->
-            <div id="modal-create-folder" class="hidden absolute top-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg mt-[180px] mr-8 md:mr-16 lg:mr-28 w-[350px] flex flex-col gap-4 overflow-hidden">
+            <form action="" method="post" id="modal-create-folder" class="hidden absolute top-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg mt-[180px] mr-8 md:mr-16 lg:mr-28 w-[300px] md:w-[350px] flex flex-col gap-4 overflow-hidden">
                 <div class="flex flex-row items-center justify-between gap-4 px-4 py-2 border-b border-b-gray-300">
                     <span>Create Folder</span>
                     <div id="button-create-folder-close" class="p-2 rounded-full hover:bg-gray-200">
@@ -156,10 +165,10 @@ if (!$dir_listing_new) {
                     </div>
                 </div>
                 <div class="flex flex-col gap-4 px-4">
-                    <input type="text" class="px-3 py-2 pr-4 text-sm bg-gray-100 border-b border-b-2 outline-none border-b-gray-300 file:text-blue-500 hover:border-b-blue-500 text-slate-700 focus:border-b-blue-500" placeholder="folder name">
+                    <input type="text" name="input-folder-name" class="px-3 py-2 pr-4 text-sm bg-gray-100 border-b border-b-2 outline-none border-b-gray-300 file:text-blue-500 hover:border-b-blue-500 text-slate-700 focus:border-b-blue-500" placeholder="folder name">
                 </div>
-                <button class="px-4 py-2 text-white bg-blue-500 hover:bg-blue-400">Create Folder</button>
-            </div>
+                <button name="submit" class="px-4 py-2 text-white bg-blue-500 hover:bg-blue-400">Create Folder</button>
+            </form>
 
         </div>
 

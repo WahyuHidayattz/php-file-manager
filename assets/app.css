@@ -599,6 +599,14 @@ video {
   width: 350px;
 }
 
+.w-\[200px\] {
+  width: 200px;
+}
+
+.w-\[300px\] {
+  width: 300px;
+}
+
 .flex-1 {
   flex: 1 1 0%;
 }
@@ -941,6 +949,10 @@ video {
     display: grid;
   }
 
+  .md\:w-\[350px\] {
+    width: 350px;
+  }
+
   .md\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -952,6 +964,11 @@ video {
   .md\:px-12 {
     padding-left: 3rem;
     padding-right: 3rem;
+  }
+
+  .md\:text-base {
+    font-size: 1rem;
+    line-height: 1.5rem;
   }
 }
 
