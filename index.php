@@ -1,14 +1,42 @@
 <?php
 
-$files = [];
-$in_folder = false;
-for ($i = 0; $i < 100; $i++) {
-    if ($i % 2 == 0) {
-        $files[] = ["This is Folder", "folder"];
-    } else {
-        $files[] = ["This is Files", "file"];
+$path = "storage";
+if (isset($_GET['path'])) {
+    $path = $_GET['path'];
+}
+
+$new_path = [];
+foreach (scandir($path) as $file) {
+    if ($file != ".") {
+        if ($file == "..") {
+            $new_path[] = [$file, "folder", "?path=" . dirname("$path")];
+        } else if (is_dir("$path/$file")) {
+            $new_path[] = [$file, "folder", "?path=$path/$file"];
+        } else {
+            $new_path[] = [$file, "file", "$path/$file"];
+        }
     }
 }
+
+usort($new_path, function ($a, $b) {
+    return $b[1] <=> $a[1];
+});
+
+$dir_listing = explode("/", $path);
+$dir_listing_new = [];
+foreach ($dir_listing as $list) {
+    if ($list != ".." && $list != ".") {
+        $dir_listing_new[] = $list;
+    }
+}
+array_shift($dir_listing_new);
+$in_folder = true;
+
+if (!$dir_listing_new) {
+    $in_folder = false;
+    array_shift($new_path);
+}
+
 
 ?>
 <html lang="en">
@@ -24,10 +52,10 @@ for ($i = 0; $i < 100; $i++) {
 <body class="">
 
     <!-- main container -->
-    <div class="flex flex-col w-full h-full bg-gray-200 overflow-auto">
+    <div class="flex flex-col w-full h-full overflow-auto bg-gray-200">
 
         <!-- header -->
-        <div class="flex flex-row items-center justify-between gap-6 px-4 md:px-12 lg:px-24 py-4 bg-slate-900 text-white">
+        <div class="flex flex-row items-center justify-between gap-6 px-4 py-4 text-white md:px-12 lg:px-24 bg-slate-900">
             <div class="flex flex-col">
                 <span class="font-semibold">File Manager PHP</span>
                 <span class="text-sm text-slate-400">Created by Wahyu Hidayat</span>
@@ -35,17 +63,18 @@ for ($i = 0; $i < 100; $i++) {
         </div>
         <!-- content -->
 
-        <div class="flex flex-col px-4 md:px-12 lg:px-24 py-6 flex-1 overflow-auto">
+        <div class="flex flex-col flex-1 px-4 py-6 overflow-auto md:px-12 lg:px-24">
 
-            <div class="flex flex-col bg-white shadow-md rounded-md overflow-auto flex-1">
+            <div class="flex flex-col flex-1 overflow-auto bg-white rounded-md shadow-md">
 
-                <div class="flex flex-row md:justify-between justify-end items-center gap-3 p-4 border-b border-b-gray-200">
-                    <div class="hidden md:flex flex-1 flex-row items-center gap-2 text-sm">
-                        <a href="" class="flex flex-row px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded-md font-semibold">
+                <div class="flex flex-row items-center justify-end gap-3 p-4 border-b md:justify-between border-b-gray-200">
+                    <div class="flex-row items-center flex-1 hidden gap-2 text-sm md:flex">
+                        <a href="?path=storage" class="flex flex-row px-2 py-1 font-semibold bg-blue-100 rounded-md hover:bg-blue-200">
                             Root Folder
                         </a>
-                        <a href="" class="flex flex-row px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-md">Wahyu</a>
-                        <a href="" class="flex flex-row px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-md">Hidayat</a>
+                        <?php foreach ($dir_listing_new as $list) : ?>
+                            <span class="flex flex-row px-2 py-1 bg-gray-200 rounded-md "><?= $list; ?></span>
+                        <?php endforeach; ?>
                     </div>
                     <button id="button-file-upload" class="flex items-center justify-center flex-row gap-3 px-3 py-1.5 bg-blue-500 hover:bg-blue-400 text-white rounded-md shadow-md">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
@@ -62,25 +91,29 @@ for ($i = 0; $i < 100; $i++) {
                     </button>
                 </div>
 
-                <div class="flex flex-col sm:grid sm:grid-cols-2 md:grid md:grid-cols-3 lg:grid lg:grid-cols-4 xl:grid xl:grid-cols-5 gap-3 p-6 overflow-auto">
-                    <?php foreach ($files as $file) : ?>
-                        <a href="" class="w-full flex flex-row items-center gap-4 px-6 py-3 text-gray-700 bg-white rounded-md border border-gray-300 hover:bg-gray-200">
-                            <?php if ($file[1] == "file") : ?>
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                                    <path fill-rule="evenodd" d="M4.5 2A1.5 1.5 0 003 3.5v13A1.5 1.5 0 004.5 18h11a1.5 1.5 0 001.5-1.5V7.621a1.5 1.5 0 00-.44-1.06l-4.12-4.122A1.5 1.5 0 0011.378 2H4.5zm2.25 8.5a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0 3a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" clip-rule="evenodd" />
-                                </svg>
-                            <?php else : ?>
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                                    <path d="M3.75 3A1.75 1.75 0 002 4.75v3.26a3.235 3.235 0 011.75-.51h12.5c.644 0 1.245.188 1.75.51V6.75A1.75 1.75 0 0016.25 5h-4.836a.25.25 0 01-.177-.073L9.823 3.513A1.75 1.75 0 008.586 3H3.75zM3.75 9A1.75 1.75 0 002 10.75v4.5c0 .966.784 1.75 1.75 1.75h12.5A1.75 1.75 0 0018 15.25v-4.5A1.75 1.75 0 0016.25 9H3.75z" />
-                                </svg>
-                            <?php endif; ?>
-                            <?= $file[0]; ?>
-                        </a>
-                    <?php endforeach; ?>
+                <div class="flex flex-col h-full">
+                    <div class="flex flex-col gap-3 p-6 overflow-auto sm:grid sm:grid-cols-2 md:grid md:grid-cols-3 lg:grid lg:grid-cols-4 xl:grid xl:grid-cols-5">
+                        <?php foreach ($new_path as $file) : ?>
+                            <a href="<?= $file[2]; ?>" class="flex flex-row items-center w-full gap-4 px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-200">
+                                <?php if ($file[1] == "folder") : ?>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                        <path d="M3.75 3A1.75 1.75 0 002 4.75v3.26a3.235 3.235 0 011.75-.51h12.5c.644 0 1.245.188 1.75.51V6.75A1.75 1.75 0 0016.25 5h-4.836a.25.25 0 01-.177-.073L9.823 3.513A1.75 1.75 0 008.586 3H3.75zM3.75 9A1.75 1.75 0 002 10.75v4.5c0 .966.784 1.75 1.75 1.75h12.5A1.75 1.75 0 0018 15.25v-4.5A1.75 1.75 0 0016.25 9H3.75z" />
+                                    </svg>
+                                <?php else : ?>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                        <path d="M3 3.5A1.5 1.5 0 014.5 2h6.879a1.5 1.5 0 011.06.44l4.122 4.12A1.5 1.5 0 0117 7.622V16.5a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 013 16.5v-13z" />
+                                    </svg>
+                                <?php endif; ?>
+                                <span class="flex-1 overflow-hidden whitespace-nowrap text-ellipsis">
+                                    <?= $file[0]; ?>
+                                </span>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
 
                 <?php if ($in_folder) : ?>
-                    <div class="flex flex-row justify-end items-center gap-3 p-4 border-t border-t-gray-200">
+                    <div class="flex flex-row items-center justify-end gap-3 p-4 border-t border-t-gray-200">
                         <a href="" class="flex items-center justify-center flex-row gap-3 px-3 py-1.5 bg-red-500 text-white rounded-md shadow-md hover:bg-red-400">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                                 <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd" />
@@ -94,7 +127,7 @@ for ($i = 0; $i < 100; $i++) {
 
             <!-- modal dialgo upload -->
             <div id="modal-file-upload" class="hidden absolute top-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg mt-[180px] mr-8 md:mr-16 lg:mr-28 w-[350px] flex flex-col gap-4 overflow-hidden">
-                <div class="flex flex-row items-center justify-between gap-4 border-b border-b-gray-300 px-4 py-2">
+                <div class="flex flex-row items-center justify-between gap-4 px-4 py-2 border-b border-b-gray-300">
                     <span>File Uploader</span>
                     <div id="button-file-close" class="p-2 rounded-full hover:bg-gray-200">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
@@ -109,12 +142,12 @@ for ($i = 0; $i < 100; $i++) {
                     <input type="file" class="pr-4 text-sm border-b border-b-2 border-b-gray-300 bg-gray-100 file:px-3 file:py-1.5 file:outline-none file:border-none file:bg-blue-200 file:text-blue-500 hover:border-b-blue-500 cursor-pointer text-slate-700">
                     <input type="file" class="pr-4 text-sm border-b border-b-2 border-b-gray-300 bg-gray-100 file:px-3 file:py-1.5 file:outline-none file:border-none file:bg-blue-200 file:text-blue-500 hover:border-b-blue-500 cursor-pointer text-slate-700">
                 </div>
-                <button class="px-4 py-2 bg-blue-500 text-white  hover:bg-blue-400">Upload All Files</button>
+                <button class="px-4 py-2 text-white bg-blue-500 hover:bg-blue-400">Upload All Files</button>
             </div>
 
             <!-- modal dialgo create folder -->
             <div id="modal-create-folder" class="hidden absolute top-0 right-0 bg-white border border-gray-300 rounded-md shadow-lg mt-[180px] mr-8 md:mr-16 lg:mr-28 w-[350px] flex flex-col gap-4 overflow-hidden">
-                <div class="flex flex-row items-center justify-between gap-4 border-b border-b-gray-300 px-4 py-2">
+                <div class="flex flex-row items-center justify-between gap-4 px-4 py-2 border-b border-b-gray-300">
                     <span>Create Folder</span>
                     <div id="button-create-folder-close" class="p-2 rounded-full hover:bg-gray-200">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
@@ -123,9 +156,9 @@ for ($i = 0; $i < 100; $i++) {
                     </div>
                 </div>
                 <div class="flex flex-col gap-4 px-4">
-                    <input type="text" class="px-3 py-2 pr-4 text-sm border-b border-b-2 border-b-gray-300 bg-gray-100  file:text-blue-500 hover:border-b-blue-500  text-slate-700 outline-none focus:border-b-blue-500" placeholder="folder name">
+                    <input type="text" class="px-3 py-2 pr-4 text-sm bg-gray-100 border-b border-b-2 outline-none border-b-gray-300 file:text-blue-500 hover:border-b-blue-500 text-slate-700 focus:border-b-blue-500" placeholder="folder name">
                 </div>
-                <button class="px-4 py-2 bg-blue-500 text-white  hover:bg-blue-400">Upload All Files</button>
+                <button class="px-4 py-2 text-white bg-blue-500 hover:bg-blue-400">Create Folder</button>
             </div>
 
         </div>
@@ -139,11 +172,11 @@ for ($i = 0; $i < 100; $i++) {
     let button_file_upload_close = document.getElementById("button-file-close");
     let modal_file_upload = document.getElementById("modal-file-upload");
 
-    button_file_upload.addEventListener('click', function(event){
+    button_file_upload.addEventListener('click', function(event) {
         event.preventDefault();
         modal_file_upload.classList.toggle("hidden");
     })
-    button_file_upload_close.addEventListener('click', (event)=> {
+    button_file_upload_close.addEventListener('click', (event) => {
         modal_file_upload.classList.toggle("hidden");
     })
 
