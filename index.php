@@ -1,13 +1,69 @@
 <?php
 
+function deleteDirectory($dir) {
+    if (!file_exists($dir)) {
+        return true;
+    }
+
+    if (!is_dir($dir)) {
+        return unlink($dir);
+    }
+
+    foreach (scandir($dir) as $item) {
+        if ($item == '.' || $item == '..') {
+            continue;
+        }
+
+        if (!deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) {
+            return false;
+        }
+
+    }
+
+    return rmdir($dir);
+}
+
 $path = "storage";
+$show_view = false;
+$file_name = '';
+
 if (isset($_GET['path'])) {
     $path = $_GET['path'];
 }
 
+if (isset($_GET['file'])) {
+    $file = $_GET['file'];
+    if (file_exists($file)) {
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="' . basename($file) . '"');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+        header('Content-Length: ' . filesize($file));
+        readfile($file);
+        exit;
+    } else {
+        echo 'File not found';
+    }
+}
+
+if (isset($_POST["delete-folder"])) {
+    $back_path = dirname($path);
+    deleteDirectory($path);
+    header("Location: {$_SERVER['PHP_SELF']}?path=$back_path");
+}
+
+if (isset($_POST["view"])) {
+    $show_view = true;
+    $vewroot = $_POST["view"];
+    $pathing = explode("/", $vewroot);
+    $file_name = $pathing[count($pathing) - 1];
+}
+
 if (isset($_POST["input-folder-name"])) {
     $folder_name = $path . "/" . $_POST["input-folder-name"];
-    if(!file_exists($folder_name)){
+    if (!file_exists($folder_name)) {
         mkdir($folder_name);
     }
 }
@@ -20,14 +76,16 @@ foreach (scandir($path) as $file) {
         } else if (is_dir("$path/$file")) {
             $new_path[] = [$file, "folder", "?path=$path/$file"];
         } else {
-            $new_path[] = [$file, "file", "$path/$file"];
+            $new_path[] = [$file, "file", "?file=$path/$file"];
         }
     }
 }
 
 array_multisort(
-    array_column($new_path, 1), SORT_DESC,
-    array_column($new_path, 0), SORT_ASC,
+    array_column($new_path, 1),
+    SORT_DESC,
+    array_column($new_path, 0),
+    SORT_ASC,
     $new_path
 );
 
@@ -45,7 +103,6 @@ if (!$dir_listing_new) {
     $in_folder = false;
     array_shift($new_path);
 }
-
 
 ?>
 <html lang="en">
@@ -77,12 +134,12 @@ if (!$dir_listing_new) {
             <div class="flex flex-col flex-1 overflow-auto bg-white rounded-md shadow-md">
 
                 <div class="flex flex-row items-center justify-end gap-3 p-4 border-b md:justify-between border-b-gray-200">
-                    <div class="flex-row items-center flex-1 hidden gap-2 text-sm md:flex">
-                        <a href="?path=storage" class="flex flex-row px-2 py-1 font-semibold bg-blue-100 rounded-md hover:bg-blue-200">
+                    <div class="flex-row items-center flex-1 hidden gap-2 py-3 overflow-auto text-sm md:flex">
+                        <a href="?path=storage" class="flex flex-row px-2 py-1 font-semibold bg-blue-100 rounded-md hover:bg-blue-200 whitespace-nowrap">
                             Root Folder
                         </a>
                         <?php foreach ($dir_listing_new as $list) : ?>
-                            <span class="flex flex-row px-2 py-1 bg-gray-200 rounded-md "><?= $list; ?></span>
+                            <span class="flex flex-row px-2 py-1 bg-gray-200 rounded-md whitespace-nowrap"><?= $list; ?></span>
                         <?php endforeach; ?>
                     </div>
                     <button id="button-file-upload" class="flex items-center justify-center flex-row gap-3 px-3 py-1.5 bg-blue-500 hover:bg-blue-400 text-white rounded-md shadow-md">
@@ -103,13 +160,13 @@ if (!$dir_listing_new) {
                 <div class="flex flex-col h-full overflow-auto">
                     <div class="flex flex-col gap-3 p-6 sm:grid sm:grid-cols-2 md:grid md:grid-cols-3 lg:grid lg:grid-cols-4 xl:grid xl:grid-cols-5">
                         <?php foreach ($new_path as $file) : ?>
-                            <a href="<?= $file[2]; ?>" class="flex flex-row items-center w-full gap-4 px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-200">
+                            <a id="button-file" href="<?= $file[2]; ?>" class="flex flex-row items-center w-full gap-4 px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-200">
                                 <?php if ($file[1] == "folder") : ?>
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                                         <path d="M3.75 3A1.75 1.75 0 002 4.75v3.26a3.235 3.235 0 011.75-.51h12.5c.644 0 1.245.188 1.75.51V6.75A1.75 1.75 0 0016.25 5h-4.836a.25.25 0 01-.177-.073L9.823 3.513A1.75 1.75 0 008.586 3H3.75zM3.75 9A1.75 1.75 0 002 10.75v4.5c0 .966.784 1.75 1.75 1.75h12.5A1.75 1.75 0 0018 15.25v-4.5A1.75 1.75 0 0016.25 9H3.75z" />
                                     </svg>
                                 <?php else : ?>
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-blue-500">
                                         <path d="M3 3.5A1.5 1.5 0 014.5 2h6.879a1.5 1.5 0 011.06.44l4.122 4.12A1.5 1.5 0 0117 7.622V16.5a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 013 16.5v-13z" />
                                     </svg>
                                 <?php endif; ?>
@@ -122,14 +179,14 @@ if (!$dir_listing_new) {
                 </div>
 
                 <?php if ($in_folder) : ?>
-                    <div class="flex flex-row items-center justify-end gap-3 p-4 border-t border-t-gray-200">
-                        <a href="" class="flex items-center justify-center flex-row gap-3 px-3 py-1.5 bg-red-500 text-white rounded-md shadow-md hover:bg-red-400">
+                    <form action="" method="post" class="flex flex-row items-center justify-end gap-3 p-4 m-0 border-t border-t-gray-200 ">
+                        <button name="delete-folder" class="flex items-center justify-center flex-row gap-3 px-3 py-1.5 bg-red-500 text-white rounded-md shadow-md hover:bg-red-400">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                                 <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd" />
                             </svg>
                             <span>Delete This Folder and files</span>
-                        </a>
-                    </div>
+                        </button>
+                    </form>
                 <?php endif; ?>
 
             </div>
@@ -170,6 +227,49 @@ if (!$dir_listing_new) {
                 <button name="submit" class="px-4 py-2 text-white bg-blue-500 hover:bg-blue-400">Create Folder</button>
             </form>
 
+            <!-- modal view` -->
+            <?php if ($show_view) : ?>
+                <div id="dialog" class="absolute top-0 bottom-0 left-0 right-0 flex flex-col items-center justify-end p-16 bg-black/20">
+                    <div class="flex flex-col w-[650px] bg-white rounded-md shadow-lg p-6 text-slate-800">
+                        <div class="flex flex-row items-center justify-between gap-6 pb-6">
+                            <div class="flex flex-row items-center gap-6">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                    <path fill-rule="evenodd" d="M4.5 2A1.5 1.5 0 003 3.5v13A1.5 1.5 0 004.5 18h11a1.5 1.5 0 001.5-1.5V7.621a1.5 1.5 0 00-.44-1.06l-4.12-4.122A1.5 1.5 0 0011.378 2H4.5zm2.25 8.5a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0 3a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" clip-rule="evenodd" />
+                                </svg>
+                                <span><?= $file_name; ?></span>
+                            </div>
+                            <button id="btn-close-dialgo" class="p-2 rounded-full hover:bg-gray-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-semibold">Details Item :</span>
+                            <div class="flex flex-col text-sm text-slate-700">
+                                <span>Size : 16MB</span>
+                                <span>Location : /var/www/html/item</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-row items-center justify-end gap-6 pt-6">
+                            <button class="px-3 py-1.5 bg-red-500 hover:bg-red-400 text-white rounded-md flex flex-row items-center gap-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                    <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd" />
+                                </svg>
+                                Delete Item
+                            </button>
+                            <button class="px-3 py-1.5 bg-green-600 hover:bg-green-500 text-white rounded-md flex flex-row items-center gap-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                    <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
+                                    <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
+                                </svg>
+                                Download Item
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+
         </div>
 
     </div>
@@ -200,6 +300,18 @@ if (!$dir_listing_new) {
 
     button_create_folder_close.addEventListener('click', () => {
         modal_create_folder.classList.toggle("hidden");
+    })
+
+    let btnCloseDialog = document.getElementById("btn-close-dialgo");
+    let dialog = document.getElementById("dialog");
+    btnCloseDialog.addEventListener('click', (e) => {
+        e.preventDefault();
+        dialog.classList.toggle("hidden");
+    })
+
+    let buttonFile = document.getElementById("button-file");
+    buttonFile.addEventListener('click', (e) => {
+        e.preventDefault();
     })
 </script>
 
