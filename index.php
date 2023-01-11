@@ -28,7 +28,7 @@ $show_view = false;
 $file_name = '';
 $upload_sucess = false;
 
-if(!file_exists("storage")){
+if (!file_exists("storage")) {
     mkdir("storage");
 }
 
@@ -71,11 +71,10 @@ if (isset($_FILES["upload"])) {
     }
 }
 
-if (isset($_POST["view"])) {
-    $show_view = true;
-    $vewroot = $_POST["view"];
-    $pathing = explode("/", $vewroot);
-    $file_name = $pathing[count($pathing) - 1];
+if (isset($_GET["remove"])) {
+    unlink($_GET["remove"]);
+    $n_dir = dirname($_GET["remove"]);
+    header("Location: {$_SERVER['PHP_SELF']}?path=$n_dir");
 }
 
 if (isset($_POST["input-folder-name"])) {
@@ -175,8 +174,13 @@ if (!$dir_listing_new) {
                 </div>
 
                 <?php if ($upload_sucess) : ?>
-                    <div class="flex flex-row items-center justify-between px-4 py-2 text-sm text-blue-500 bg-blue-100">
+                    <div class="flex flex-row items-center justify-between px-4 text-sm text-blue-500 bg-blue-100">
                         <span>Upload file sucess.</span>
+                        <a href="" class="p-2 rounded-full hover:bg-blue-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                            </svg>
+                        </a>
                     </div>
                 <?php endif; ?>
 
@@ -199,11 +203,11 @@ if (!$dir_listing_new) {
                                     </span>
                                 </a>
                                 <?php if ($file[1] == "file") : ?>
-                                    <button class="h-full px-3 py-1.5 hover:bg-red-100 group">
+                                    <a href="?remove=<?= $path . "/" . $file[0]; ?>" name="delete-file" class="h-full px-3 py-1.5 hover:bg-red-100 group items-center justify-center flex flex-col">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 group-hover:text-red-500">
                                             <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
                                         </svg>
-                                    </button>
+                                    </a>
                                 <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
@@ -216,7 +220,7 @@ if (!$dir_listing_new) {
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                                 <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd" />
                             </svg>
-                            <span>Delete This Folder and files</span>
+                            <span>Delete and Empty this folder</span>
                         </button>
                     </form>
                 <?php endif; ?>
