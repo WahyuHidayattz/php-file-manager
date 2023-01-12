@@ -59,17 +59,29 @@ if (isset($_POST["delete-folder"])) {
     header("Location: {$_SERVER['PHP_SELF']}?path=$back_path");
 }
 
-if (isset($_FILES["upload"])) {
-    $name = $_FILES["upload"]["name"];
-    $tmp_name = $_FILES["upload"]["tmp_name"];
-    $size = $_FILES["upload"]["size"];
-    $error = $_FILES["upload"]["error"];
-    if ($error == 0) {
-        if (move_uploaded_file($tmp_name, $path . "/" . $name)) {
-            $upload_sucess = true;
+$uploads = [
+    "upload1",
+    "upload2",
+    "upload3",
+    "upload4"
+];
+$upload_count = 0;
+
+foreach ($uploads as $up) {
+    if (isset($_FILES[$up])) {
+        $name = $_FILES[$up]["name"];
+        $tmp_name = $_FILES[$up]["tmp_name"];
+        $size = $_FILES[$up]["size"];
+        $error = $_FILES[$up]["error"];
+        if ($error == 0) {
+            if (move_uploaded_file($tmp_name, $path . "/" . $name)) {
+                $upload_sucess = true;
+                $upload_count++;
+            }
         }
     }
 }
+
 
 if (isset($_GET["remove"])) {
     unlink($_GET["remove"]);
@@ -175,7 +187,7 @@ if (!$dir_listing_new) {
 
                 <?php if ($upload_sucess) : ?>
                     <div class="flex flex-row items-center justify-between px-4 text-sm text-blue-500 bg-blue-100">
-                        <span>Upload file sucess.</span>
+                        <span><?= $upload_count; ?> files sucess uploaded.</span>
                         <a href="" class="p-2 rounded-full hover:bg-blue-200">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                                 <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
@@ -238,7 +250,9 @@ if (!$dir_listing_new) {
                     </div>
                 </div>
                 <div class="flex flex-col gap-4 px-4">
-                    <input type="file" name="upload" class="pr-4 text-sm border-b border-b-2 border-b-gray-300 bg-gray-100 file:px-3 file:py-1.5 file:outline-none file:border-none file:bg-blue-200 file:text-blue-500 hover:border-b-blue-500 cursor-pointer text-slate-700">
+                    <?php foreach ($uploads as $upload) : ?>
+                        <input type="file" name="<?= $upload; ?>" class="pr-4 text-sm border-b border-b-2 border-b-gray-300 bg-gray-100 file:px-3 file:py-1.5 file:outline-none file:border-none file:bg-blue-200 file:text-blue-500 hover:border-b-blue-500 cursor-pointer text-slate-700">
+                    <?php endforeach; ?>
                 </div>
                 <button name="submit" class="px-4 py-2 text-white bg-blue-500 hover:bg-blue-400">Upload All Files</button>
             </form>
